@@ -62,8 +62,8 @@ WORKDIR /app
 
 # Copy built artifacts from builder stage
 # Use --chown to set ownership during copy (avoids separate chown layer)
+# Note: UI builds to dist/control-ui (not ui/dist)
 COPY --from=builder --chown=node:node /app/dist ./dist
-COPY --from=builder --chown=node:node /app/ui/dist ./ui/dist
 COPY --from=builder --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/package.json ./
 COPY --from=builder --chown=node:node /app/openclaw.mjs ./
