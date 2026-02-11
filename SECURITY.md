@@ -51,6 +51,13 @@ For threat model + hardening guidance (including `openclaw security audit --deep
 
 - `https://docs.openclaw.ai/gateway/security`
 
+### Security Assessments
+
+Ongoing security assessments and enterprise risk analysis are documented in:
+
+- [Assessment Framework](docs/security/assessments/README.md) - Individual risk domain assessments (Issues 1-5)
+- [Consolidated Risk Assessment](ISSUE-6-CONSOLIDATED-RISK-ASSESSMENT.md) - Enterprise security posture summary
+
 ### Web Interface Safety
 
 OpenClaw's web interface is intended for local use only. Do **not** bind it to the public internet; it is not hardened for public exposure.

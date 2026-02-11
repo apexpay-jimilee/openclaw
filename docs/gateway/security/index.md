@@ -9,7 +9,10 @@ title: "Security"
 
 ## Quick check: `openclaw security audit`
 
-See also: [Formal Verification (Security Models)](/security/formal-verification/)
+See also:
+- [Formal Verification (Security Models)](/security/formal-verification/)
+- [Security Assessment Program](/security/assessments/) - Comprehensive risk domain analysis
+- [Enterprise Risk Assessment](/ISSUE-6-CONSOLIDATED-RISK-ASSESSMENT) - Consolidated security posture
 
 Run this regularly (especially after changing config or exposing network surfaces):
 
