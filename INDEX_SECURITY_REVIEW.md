@@ -1,12 +1,105 @@
-# Docker & Runtime Security Review - Document Index
+# OpenClaw Security Assessment - Master Document Index
 
-**Issue:** ISSUE 4 — Sandbox, Runtime & Docker Hardening  
-**Status:** ✅ COMPLETE  
-**Date:** 2026-02-11  
+**Assessment Period:** February 11, 2026  
+**Status:** ✅ ALL ISSUES COMPLETE (6/6)  
+**Coverage:** 3,408+ files, 500K+ LOC  
+**Documentation:** 16,000+ lines  
 
 ---
 
-## 📋 Quick Navigation
+## 🎯 Start Here
+
+| Document | Purpose | Audience |
+|----------|---------|----------|
+| **[SECURITY_ASSESSMENT_COMPLETE_SUMMARY.md](SECURITY_ASSESSMENT_COMPLETE_SUMMARY.md)** | **Complete assessment summary (all 6 issues)** | **Everyone - Start Here** |
+| [SECURITY_SUMMARY.md](SECURITY_SUMMARY.md) | Docker & runtime executive overview | Management, Security Team |
+| [SECURITY_QUICKSTART.md](SECURITY_QUICKSTART.md) | Quick commands, troubleshooting, operations | DevOps, Operators |
+| [SECURITY_REVIEW_EXECUTIVE_SUMMARY.md](SECURITY_REVIEW_EXECUTIVE_SUMMARY.md) | Supply chain executive summary | Leadership, Decision Makers |
+
+---
+
+## 📚 Assessment Reports by Category
+
+### 🗺️ Issue #1-2: Repository Mapping & Attack Surface
+| Document | Lines | Description |
+|----------|-------|-------------|
+| [SECURITY_ASSESSMENT_REPOSITORY_MAPPING.md](SECURITY_ASSESSMENT_REPOSITORY_MAPPING.md) | 1,062 | Complete attack surface inventory, entry points, execution sinks |
+
+**Scope:** 3,408 files, 12+ entry points, 312 execution sinks  
+**PR:** [#10](https://github.com/apexpay-jimilee/openclaw/pull/10) ✅ Merged
+
+### 🔧 Issue #3: Agent Core & Tool Execution Risks  
+| Document | Lines | Description |
+|----------|-------|-------------|
+| [SECURITY_REVIEW_AGENT_TOOL_EXECUTION.md](SECURITY_REVIEW_AGENT_TOOL_EXECUTION.md) | ~800 | Tool-to-sink taint flow analysis, LLM parameter transformation |
+
+**Critical Findings:** Unrestricted shell execution (CVSS 9.8), tool registry arbitrary invocation  
+**PR:** [#8](https://github.com/apexpay-jimilee/openclaw/pull/8) ✅ Merged
+
+### 💉 Issue #4: Prompt Injection & Indirect Injection
+| Document | Lines | Description |
+|----------|-------|-------------|
+| [SECURITY_REVIEW_PROMPT_INJECTION.md](SECURITY_REVIEW_PROMPT_INJECTION.md) | 1,749 | Browser HTML injection, web fetch re-injection, memory persistence attacks |
+
+**Critical Findings:** Browser tool HTML injection (CVSS 9.3), 45+ injection surfaces, 0 guardrails  
+**PR:** [#9](https://github.com/apexpay-jimilee/openclaw/pull/9) ✅ Merged
+
+### 🐳 Issue #5: Docker & Runtime Hardening
+| Document | Lines | Description |
+|----------|-------|-------------|
+| [SECURITY_ASSESSMENT_DOCKER.md](SECURITY_ASSESSMENT_DOCKER.md) | ~800 | Container security analysis, CIS benchmark compliance |
+| [SECURITY_SUMMARY.md](SECURITY_SUMMARY.md) | ~350 | Executive overview and 3-phase roadmap |
+| [SECURITY_QUICKSTART.md](SECURITY_QUICKSTART.md) | ~300 | Deployment commands and verification |
+| [docs/deployment/hardening.md](docs/deployment/hardening.md) | ~280 | Implementation guide |
+
+**Hardened Configs:** `Dockerfile.hardened`, `docker-compose.hardened.yml`, systemd services  
+**PR:** [#11](https://github.com/apexpay-jimilee/openclaw/pull/11) ✅ Merged
+
+### 📦 Issue #6: Supply Chain & CI/CD Security
+| Document | Lines | Description |
+|----------|-------|-------------|
+| [SUPPLY_CHAIN_SECURITY_REVIEW.md](SUPPLY_CHAIN_SECURITY_REVIEW.md) | 669 | Dependency risk matrix, unpinned actions, floating versions |
+| [SECURITY_REVIEW_INDEX.md](SECURITY_REVIEW_INDEX.md) | ~200 | Navigation hub for supply chain docs |
+| [SECURITY_REVIEW_EXECUTIVE_SUMMARY.md](SECURITY_REVIEW_EXECUTIVE_SUMMARY.md) | ~400 | Leadership overview |
+| [REVIEW_VERIFICATION_CHECKLIST.md](REVIEW_VERIFICATION_CHECKLIST.md) | ~150 | Audit trail and verification steps |
+
+**Findings:** 50+ unpinned GitHub Actions, 83% floating dependencies  
+**PR:** [#12](https://github.com/apexpay-jimilee/openclaw/pull/12) ✅ Merged
+
+### 🏢 Issue #7: Consolidated Enterprise Risk Assessment
+| Document | Lines | Description |
+|----------|-------|-------------|
+| [ISSUE-6-CONSOLIDATED-RISK-ASSESSMENT.md](ISSUE-6-CONSOLIDATED-RISK-ASSESSMENT.md) | ~600 | Consolidation framework |
+| [docs/security/assessments/README.md](docs/security/assessments/README.md) | - | Assessment methodology guide |
+| [docs/security/assessments/issue-1-tool-safety.md](docs/security/assessments/issue-1-tool-safety.md) | 257 | Tool safety assessment template |
+| [docs/security/assessments/issue-2-data-exfiltration.md](docs/security/assessments/issue-2-data-exfiltration.md) | 308 | Data exfiltration template |
+| [docs/security/assessments/issue-3-secrets-management.md](docs/security/assessments/issue-3-secrets-management.md) | 386 | Secrets management template |
+| [docs/security/assessments/issue-4-supply-chain.md](docs/security/assessments/issue-4-supply-chain.md) | 454 | Supply chain template |
+| [docs/security/assessments/issue-5-network-isolation.md](docs/security/assessments/issue-5-network-isolation.md) | 563 | Network isolation template |
+
+**Framework:** CVSS v3.1, OWASP, NIST, CWE, GDPR/CCPA, SLSA, MITRE ATT&CK  
+**PR:** [#13](https://github.com/apexpay-jimilee/openclaw/pull/13) ✅ Merged
+
+---
+
+## 🚨 Top 10 Enterprise Risks (Quick Reference)
+
+1. **Unrestricted Shell Execution** - CRITICAL (CVSS 9.8)
+2. **Browser HTML Prompt Injection** - CRITICAL (CVSS 9.3)
+3. **Tool Registry Arbitrary Invocation** - CRITICAL (CVSS 9.1)
+4. **Web Fetch Content Re-injection** - CRITICAL (CVSS 9.1)
+5. **Path Traversal in File Operations** - HIGH (CVSS 8.6)
+6. **Memory Persistence of Malicious Instructions** - HIGH (CVSS 8.4)
+7. **Unpinned GitHub Actions** - HIGH (CVSS 7.5)
+8. **Floating Production Dependencies** - MEDIUM (CVSS 5.8)
+9. **Missing Runtime Security Controls** - MEDIUM (CVSS 5.5)
+10. **No Output Sanitization** - MEDIUM (CVSS 5.3)
+
+See [SECURITY_ASSESSMENT_COMPLETE_SUMMARY.md](SECURITY_ASSESSMENT_COMPLETE_SUMMARY.md) for details.
+
+---
+
+## 📋 Quick Navigation (Original Docker Review Section)
 
 | Document | Purpose | Audience |
 |----------|---------|----------|
