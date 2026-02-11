@@ -13,6 +13,8 @@ Security tools (audit + optional fixes).
 Related:
 
 - Security guide: [Security](/gateway/security)
+- Security assessments: [Assessment Framework](/docs/security/assessments/)
+- Enterprise risk analysis: [Consolidated Assessment](/ISSUE-6-CONSOLIDATED-RISK-ASSESSMENT.md)
 
 ## Audit
 
