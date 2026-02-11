@@ -1,0 +1,115 @@
+# Hardened Systemd Service for OpenClaw Auth Monitor
+#
+# Security improvements over base openclaw-auth-monitor.service:
+# - Runs as dedicated user (not root or admin)
+# - Filesystem restrictions (read-only system, private tmp)
+# - Network restrictions (only required address families)
+# - Namespace restrictions
+# - No setuid/setgid execution
+# - Kernel protection
+# - Device access restrictions
+#
+# Installation:
+#   1. Create dedicated user: sudo useradd -r -s /bin/false openclaw
+#   2. Adjust paths to match your installation
+#   3. Copy to: ~/.config/systemd/user/ (user service)
+#      OR /etc/systemd/system/ (system service)
+#   4. Reload: systemctl --user daemon-reload
+#   5. Enable: systemctl --user enable openclaw-auth-monitor.timer
+
+[Unit]
+Description=OpenClaw Auth Expiry Monitor (Hardened)
+After=network.target
+Documentation=https://docs.openclaw.ai
+
+[Service]
+Type=oneshot
+
+# ADJUST THIS PATH to your OpenClaw installation
+ExecStart=/usr/local/bin/openclaw-auth-monitor
+
+# Configure notification channels via environment
+Environment=WARN_HOURS=2
+# Environment=NOTIFY_PHONE=+1234567890
+# Environment=NOTIFY_NTFY=openclaw-alerts
+
+# ============================================================================
+# Security Hardening
+# ============================================================================
+
+# Run as dedicated non-root user
+# Create user: sudo useradd -r -s /bin/false openclaw
+# Adjust to match your setup (or remove if running as user service)
+User=openclaw
+Group=openclaw
+
+# Prevent privilege escalation
+NoNewPrivileges=true
+
+# Filesystem protection
+# ProtectSystem=strict: read-only /usr, /boot, /efi
+ProtectSystem=strict
+
+# ProtectHome=read-only: home directories read-only
+# Set to 'true' to completely hide home directories
+ProtectHome=read-only
+
+# Allow writing only to specific paths
+# ADJUST THESE PATHS to match your installation
+ReadWritePaths=/home/openclaw/.openclaw
+
+# Private /tmp (not shared with other processes)
+PrivateTmp=true
+
+# Network restrictions
+# Only allow Unix sockets, IPv4, and IPv6
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+# Namespace restrictions
+RestrictNamespaces=true
+
+# Prevent real-time scheduling (DoS protection)
+RestrictRealtime=true
+
+# Prevent setuid/setgid execution
+RestrictSUIDSGID=true
+
+# Prevent personality changes (prevent circumventing restrictions)
+LockPersonality=true
+
+# Kernel protection
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+
+# Device access restrictions
+PrivateDevices=true
+
+# Prevent access to other users' processes
+ProtectProc=invisible
+ProcSubset=pid
+
+# System call filtering
+# Deny system calls that can change system time
+SystemCallFilter=~@clock
+# Deny system calls that can debug other processes
+SystemCallFilter=~@debug
+# Deny system calls that can load kernel modules
+SystemCallFilter=~@module
+# Deny system calls that can mount filesystems
+SystemCallFilter=~@mount
+# Deny system calls that can manage raw sockets
+SystemCallFilter=~@raw-io
+# Deny system calls that can reboot the system
+SystemCallFilter=~@reboot
+# Deny system calls that can swap memory
+SystemCallFilter=~@swap
+
+# Logging (optional but recommended)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=openclaw-auth-monitor
+
+[Install]
+WantedBy=default.target
