@@ -1,0 +1,130 @@
+# Hardened Docker Compose Configuration for OpenClaw
+# 
+# Security improvements over base docker-compose.yml:
+# - Ports bound to localhost only (127.0.0.1)
+# - no-new-privileges security option
+# - Read-only root filesystem with tmpfs for writable paths
+# - Capability dropping (principle of least privilege)
+# - Isolated Docker network
+# - tmpfs with noexec/nosuid/nodev flags
+# - Default bind changed to loopback
+#
+# Usage:
+#   docker compose -f docker-compose.hardened.yml up -d
+
+services:
+  openclaw-gateway:
+    image: ${OPENCLAW_IMAGE:-openclaw:local}
+    environment:
+      HOME: /home/node
+      TERM: xterm-256color
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
+      CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY}
+      CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY}
+      CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE}
+    volumes:
+      # Config directory (read-write required for session state)
+      - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
+      # Workspace directory (read-write required for agent operations)
+      - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
+    ports:
+      # SECURITY: Bind to localhost only to prevent external access
+      # Remove 127.0.0.1: prefix if you need LAN access (not recommended)
+      - "127.0.0.1:${OPENCLAW_GATEWAY_PORT:-18789}:18789"
+      - "127.0.0.1:${OPENCLAW_BRIDGE_PORT:-18790}:18790"
+    init: true
+    restart: unless-stopped
+    
+    # ========================================================================
+    # Security Hardening Options
+    # ========================================================================
+    
+    # Prevent privilege escalation via setuid/setgid/file capabilities
+    security_opt:
+      - no-new-privileges:true
+    
+    # Read-only root filesystem (defense in depth)
+    # Application writes to tmpfs mounts only
+    read_only: true
+    
+    # Temporary filesystems for writable paths
+    # noexec: prevent execution of binaries
+    # nosuid: ignore setuid/setgid bits
+    # nodev: prevent device node interpretation
+    tmpfs:
+      - /tmp:noexec,nosuid,nodev,size=100m
+      - /home/node/.npm:noexec,nosuid,nodev,size=200m
+      - /home/node/.cache:noexec,nosuid,nodev,size=100m
+    
+    # Drop all capabilities by default
+    cap_drop:
+      - ALL
+    
+    # Add back only required capabilities
+    # NET_BIND_SERVICE: bind to ports < 1024 (not needed for 18789)
+    # Remove this if not binding to privileged ports
+    cap_add:
+      - NET_BIND_SERVICE
+    
+    # Use isolated internal network
+    networks:
+      - openclaw-internal
+    
+    command:
+      [
+        "node",
+        "dist/index.js",
+        "gateway",
+        "--bind",
+        # SECURITY: Default to loopback instead of lan
+        "${OPENCLAW_GATEWAY_BIND:-loopback}",
+        "--port",
+        "18789",
+      ]
+
+  openclaw-cli:
+    image: ${OPENCLAW_IMAGE:-openclaw:local}
+    environment:
+      HOME: /home/node
+      TERM: xterm-256color
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
+      BROWSER: echo
+      CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY}
+      CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY}
+      CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE}
+    volumes:
+      - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
+      - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
+    stdin_open: true
+    tty: true
+    init: true
+    
+    # ========================================================================
+    # Security Hardening Options
+    # ========================================================================
+    
+    # Prevent privilege escalation
+    security_opt:
+      - no-new-privileges:true
+    
+    # Drop all capabilities (CLI doesn't need any)
+    cap_drop:
+      - ALL
+    
+    # Use isolated internal network
+    networks:
+      - openclaw-internal
+    
+    entrypoint: ["node", "dist/index.js"]
+
+# ============================================================================
+# Network Configuration
+# ============================================================================
+networks:
+  openclaw-internal:
+    driver: bridge
+    # Set internal: true to block external network access (only container-to-container)
+    # Leave as false to allow internet access (required for AI providers)
+    internal: false
+    driver_opts:
+      com.docker.network.bridge.name: openclaw0
